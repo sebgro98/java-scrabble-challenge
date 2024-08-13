@@ -65,7 +65,7 @@ public class Scrabble {
                 char currentChar = word.charAt(i);
                 System.out.println(currentChar);
 
-                if (currentChar == '[' && word.charAt(i + 3) != ']') {
+                if (currentChar == '[') {
 
                     if (insideBrackets || insideCurly) return 0;
                     insideBrackets = true;
@@ -80,7 +80,9 @@ public class Scrabble {
                     bracketCounter--;
 
                 } else if (currentChar == '{') {
-
+                    if ( word.charAt(i + 2) != '}') {
+                        return 0;
+                    }
                     if (insideCurly || insideBrackets) return 0;
                     insideCurly = true;
                     multiplier = 2;
