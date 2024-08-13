@@ -5,6 +5,13 @@ import java.util.HashMap;
 public class Scrabble {
     String word;
     HashMap<String, Integer> points = new HashMap<>();
+    boolean insideBrackets = false;
+    boolean insideCurly = false;
+    int multiplier = 1;
+    int wordMultiplier = 1;
+    int result = 0;
+    int bracketCounter = 0;
+    int curlyCounter = 0;
 
     public void getValues() {
         // 1 point
@@ -16,7 +23,7 @@ public class Scrabble {
         // 2 points
         points.put("D", 2); points.put("G", 2);
 
-        // 3 ponts
+        // 3 points
         points.put("B", 3); points.put("C", 3);
         points.put("M", 3); points.put("P", 3);
 
@@ -33,7 +40,6 @@ public class Scrabble {
 
         // 10 points
         points.put("Q", 10); points.put("Z", 10);
-
     }
 
     public Scrabble(String word) {
@@ -42,19 +48,71 @@ public class Scrabble {
     }
 
     public int score() {
-        int result = 0;
-        if(!word.isEmpty()) {
+
+        if (!word.isEmpty()) {
+
+            if (word.startsWith("{") && word.endsWith("}") && word.charAt(2) != '}') {
+                wordMultiplier = 2;
+                word = word.substring(1, word.length() - 1);
+                System.out.println("1 " + word);
+            } else if (word.startsWith("[") && word.endsWith("]") && word.charAt(2) != ']') {
+                wordMultiplier = 3;
+                word = word.substring(1, word.length() - 1);
+                System.out.println("2 " + word);
+            }
+
             for (int i = 0; i < word.length(); i++) {
-                if(Character.isWhitespace(word.charAt(i))) {
+                char currentChar = word.charAt(i);
+                System.out.println(currentChar);
+
+                if (currentChar == '[' && word.charAt(i + 3) != ']') {
+
+                    if (insideBrackets || insideCurly) return 0;
+                    insideBrackets = true;
+                    multiplier = 3;
+                    bracketCounter++;
+
+
+                } else if (currentChar == ']') {
+                    if (!insideBrackets || bracketCounter == 0) return 0;
+                    insideBrackets = false;
+                    multiplier = 1;
+                    bracketCounter--;
+
+                } else if (currentChar == '{') {
+
+                    if (insideCurly || insideBrackets) return 0;
+                    insideCurly = true;
+                    multiplier = 2;
+                    curlyCounter++;
+
+
+                } else if (currentChar == '}') {
+                    if (!insideCurly || curlyCounter == 0) return 0;
+                    insideCurly = false;
+                    multiplier = 1;
+                    curlyCounter--;
+
+                } else if (Character.isLetter(currentChar)) {
+                    int score = points.get(String.valueOf(currentChar));
+                    result += score * multiplier;
+
+                    if (!insideCurly && !insideBrackets) {
+                        multiplier = 1;
+                    }
+
+                } else {
+
                     return 0;
                 }
-                result += points.get(String.valueOf(word.charAt(i)));
+            }
+
+
+            if (bracketCounter > 0 || curlyCounter > 0) {
+                return 0;
             }
         }
 
-        return result;
+        return result * wordMultiplier;
     }
-
-
-
 }
